@@ -26,6 +26,9 @@
 #define SUPPORT_B509_7793         //R61509, ST7793 +244 bytes
 //#define OFFSET_9327 32            //costs about 103 bytes, 0.08s
 
+// Support 9486
+#define OFFSET_9486 24
+
 #include "MCUFRIEND_kbv.h"
 #if defined(USE_SERIAL)
 #include "utility/mcufriend_serial.h"
@@ -544,6 +547,20 @@ void MCUFRIEND_kbv::drawPixel(int16_t x, int16_t y, uint16_t color)
 
 void MCUFRIEND_kbv::setAddrWindow(int16_t x, int16_t y, int16_t x1, int16_t y1)
 {
+#if defined(OFFSET_9486)
+    if (_lcd_ID == 0x9486) {
+        if (rotation % 2 == 1)
+        {
+                y += OFFSET_9486;
+                y1 += OFFSET_9486;
+        }
+        else
+        {
+                x += OFFSET_9486;
+                x1 += OFFSET_9486;
+        }
+    }
+#endif
 #if defined(OFFSET_9327)
 	if (_lcd_ID == 0x9327) {
 	    if (rotation == 2) y += OFFSET_9327, y1 += OFFSET_9327;
@@ -2857,7 +2874,11 @@ case 0x4532:    // thanks Leodino
         p16 = (int16_t *) & HEIGHT;
         *p16 = 480;
         p16 = (int16_t *) & WIDTH;
+#if defined(OFFSET_9486)
+        *p16 = 320 - (OFFSET_9486 * 2);
+#else
         *p16 = 320;
+#endif
         break;
     case 0x7796:
         _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS;   //thanks to safari1
